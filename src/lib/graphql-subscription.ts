@@ -7,14 +7,10 @@ import { gql } from "apollo-boost";
 * $lowBlockNum: starting block num, a negative number means fetching the past N blocks
 **/
 export const subscribeTransactions = gql`
-  fragment actionTracesFragment on ActionTrace {
-    account
-    receiver
-    name
-  }
+  
   subscription subscribeTransactions($cursor: String, $lowBlockNum: Int64) {
     searchTransactionsForward(
-      query: "status:executed notif:false"
+      query: "account:dcdpcontract"
       lowBlockNum: $lowBlockNum
       cursor: $cursor
     ) {
@@ -28,7 +24,11 @@ export const subscribeTransactions = gql`
         }
         id
         executedActions {
-          ...actionTracesFragment
+          name 
+          receiver
+          account
+          data
+          
         }
       }
     }
