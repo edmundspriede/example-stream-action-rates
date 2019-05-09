@@ -11,19 +11,25 @@ import {
  * the 'undo' property relates to the block irreversibility and controls the incrementation
  **/
 export function parseResponseFromGraphQL(
-  actionsMap: ActionMap,
+  actionsMap  : any,
   data: GraphQLTransactionTrace,
   undo: boolean
 ) {
   data.executedActions.map((action: GraphQLActionTrace) => {
-    const key = `${action.account}:${action.name}`;
-    const increment = undo ? -1 : 1;
-    if (!actionsMap[key]) {
-      actionsMap[key] = increment;
-    } else {
-      actionsMap[key] += increment;
-    }
+   // const key = `${action.account}:${action.name}`;
+   // const increment = undo ? -1 : 1;
+
+  if  (action.name === 'act') {
+     actionsMap.unshift([action.account,  action.name, action.data.table_id,   action.data.name, action.data.act.act_,action.data.act.bet_]);
+   }  else {
+
+     actionsMap.unshift([action.account,  action.name, action.data.table_id,  action.data.name,  null, null]);
+  }
+
+   if (actionsMap.length > 20 ) { actionsMap.pop()  }
+    //actionsMap.unshift(   {user : action.account , act : action.name , data : action.data , table: action.data.table_id}   );
   });
+
   return actionsMap;
 }
 
