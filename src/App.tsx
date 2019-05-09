@@ -26,6 +26,7 @@ import {
 import { apolloClient } from "./lib/apollo-client";
 import { ActionMap } from "./lib/models";
 
+
 const Container: React.ComponentType<any> = styled.div`
   ${space};
   ${width};
@@ -52,6 +53,7 @@ const GithubContainer: React.ComponentType<any> = styled.div`
 **/
 class App extends Component<any, { topActions: string[] }> {
   actionsMap: ActionMap = {};
+  actionsMapPoker  = [];
   interval: any = undefined;
   state = { topActions: [] };
   startTime = 0;
@@ -81,35 +83,41 @@ class App extends Component<any, { topActions: string[] }> {
   /** Parses the data from payload and updates the timerange **/
   onSubscriptionData = ({ client, subscriptionData }: any) => {
     const response = subscriptionData.data.searchTransactionsForward;
+
+
     if (this.startTime === 0) {
       this.startTime = new Date(response.trace.block.timestamp).getTime();
       this.startTimeString = response.trace.block.timestamp;
     }
     this.endTime = new Date(response.trace.block.timestamp).getTime();
 
-    this.actionsMap = parseResponseFromGraphQL(
-      this.actionsMap,
+    this.actionsMapPoker = parseResponseFromGraphQL(
+      this.actionsMapPoker,
       response.trace,
       response.undo
     );
 
+    console.log(this.actionsMapPoker );
 
       let height = document.getElementsByClassName("App")[0].clientHeight
       window.parent.postMessage({"height": height}, "*")
+
+
   };
 
   /** RENDER Methods **/
+  /** RENDER Methods **/
   renderActions(): JSX.Element[] {
-    return this.state.topActions.map((topAction: string, index: number) => {
+    return this.actionsMapPoker.map((data: any, index: number) => {
       return (
-        <TableRow key={index}>
-          <TableCell>{index + 1}</TableCell>
-          <TableCell>{topAction.split(":")[0]}</TableCell>
-          <TableCell>{topAction.split(":")[1]}</TableCell>
-          <TableCell>
-            {Math.floor(this.actionsMap[topAction] / this.timeRange)}
-          </TableCell>
-        </TableRow>
+          <TableRow key={index}>
+            <TableCell>{data[3]}</TableCell>
+            <TableCell>{data[1]}</TableCell>
+            <TableCell>{data[2]}</TableCell>
+            <TableCell>{data[4]}</TableCell>
+            <TableCell>{data[5]}</TableCell>
+
+          </TableRow>
       );
     });
   }
@@ -135,42 +143,20 @@ class App extends Component<any, { topActions: string[] }> {
     });
 
     return [
-      <div key="1" style={{ width: "100%", height: 300, paddingBottom: "50px" }}>
-        <ResponsiveContainer>
-          <BarChart
-            width={500}
-            height={300}
-            data={data}
-            margin={{
-              top: 20,
-              right: 30,
-              left: 20,
-              bottom: 5
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis scale="log" domain={["auto", "auto"]} />
-            <Bar dataKey="value" fill="#1c1e3e" label={{ position: "top" }}>
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill="#1c1e3e" />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>,
+
       <Container key="2">
         <Grid xs={12}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Rank</TableCell>
-                <TableCell>Account</TableCell>
+                <TableCell>Player</TableCell>
+                <TableCell>Act</TableCell>
+                <TableCell>Table</TableCell>
                 <TableCell>Action</TableCell>
-                <TableCell>Count per minute</TableCell>
+                <TableCell>Bet</TableCell>
               </TableRow>
             </TableHead>
-            <TableBody>{this.renderActions()}</TableBody>
+            <TableBody> {this.renderActions()} </TableBody>
           </Table>
         </Grid>
       </Container>
@@ -180,13 +166,15 @@ class App extends Component<any, { topActions: string[] }> {
           window.top.location.href="https://github.com/dfuse-io/example-stream-action-rates"
   }
   render() {
+
+
     return (
       <div className="App">
         <ApolloProvider client={apolloClient}>
           {this.renderSubscriber()}
           <div>
             <h2 style={{ color: "#1c1e3e", paddingTop: "40px" }}>
-              Average action rates since {this.startTimeString}
+              Pokerchained Live Actions Demo
             </h2>
             <h3 style={{ color: "#777", paddingTop: "20px" }}>
               Example React application using dfuse GraphQL API
@@ -195,9 +183,7 @@ class App extends Component<any, { topActions: string[] }> {
               </GithubContainer>
             </h3>
           </div>
-          {this.state.topActions.length > 0
-            ? this.renderWidgets()
-            : this.renderLoading()}
+           {this.renderWidgets()  }
         </ApolloProvider>
       </div>
     );
